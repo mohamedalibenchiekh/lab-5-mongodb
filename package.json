@@ -16,7 +16,7 @@
     "format:check": "prettier --check 'src/**/*.js'",
     "performance": "node test-performance.js",
     "security": "npm audit",
-    "prepare": "husky install"
+    "prepare": "sh -c \"if [ \"$CI\" = \"true\" ] || [ \"$NODE_ENV\" = \"production\" ]; then echo 'Skipping husky in CI/production'; else husky install; fi\""
   },
   "keywords": [],
   "author": "",
