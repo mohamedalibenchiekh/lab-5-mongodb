@@ -1,190 +1,139 @@
-# LAB 5: MongoDB & Database Mastery
+# Lab 5 — Event Manager API (MongoDB + Mongoose)
 
-## Event Manager API with MongoDB and Mongoose
+A production-ready REST API for managing events and users, implemented with Express.js, MongoDB and Mongoose. This repository demonstrates clean project structure, schema validation, advanced querying, and sensible defaults for development and testing.
 
-A professional REST API demonstrating MongoDB integration with Mongoose ODM.
+## Highlights
 
-## Features
-
-- ✅ MongoDB connection management
-- ✅ Mongoose schemas with validation
-- ✅ Full CRUD operations
-- ✅ Advanced queries (filtering, sorting, pagination)
-- ✅ Database indexes for performance
-- ✅ Aggregation pipelines
-- ✅ Relationship management (one-to-many)
-- ✅ Modular code architecture
+- Robust MongoDB connection handling with retry/timeout support
+- Mongoose schemas with validation and indexes
+- Full CRUD for Events and Users
+- Filtering, sorting, pagination and text search for queries
+- Aggregation examples and relationship handling (refs)
+- Modular services, controllers and route organization
+- Lightweight test scripts for DB connectivity and query correctness
 
 ## Tech Stack
 
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose ODM
-- ES Modules
+- Node.js (ES Modules)
+- Express
+- MongoDB (local or Atlas)
+- Mongoose
 
-## Setup Instructions
+## Prerequisites
 
-### Prerequisites
+- Node.js 18+ and npm
+- MongoDB instance (local or Atlas) and a connection URI
 
-- Node.js (v18+)
-- MongoDB installed locally or MongoDB Atlas account
+## Quickstart
 
-### Installation
+1. Install dependencies
 
 ```bash
-# Clone the repository
-git clone https://github.com/mohamedalibenchiekh/lab-5-mongodb
-cd lab-5-mongodb
-
-# Install dependencies
 npm install
-
-# Create .env file
-cp .env.example .env
-
-# Update .env with your MongoDB URI
 ```
 
-### Running the Application
+2. Create environment file
 
 ```bash
-# Development mode (with auto-reload)
+cp .env.example .env
+# then edit .env to set MONGODB_URI (or whatever variable your config expects)
+```
+
+3. Run the app
+
+```bash
+# development (with nodemon if configured)
 npm run dev
 
-# Production mode
+# production
 npm start
 ```
 
-### Testing
+4. Run lightweight tests
 
 ```bash
-# Test database connection
-npm run test:db
-
-# Test advanced queries
-npm run test:queries
+npm run test:db        # checks DB connection
+npm run test:queries   # runs sample queries against DB
 ```
 
-## API Endpoints
+(If these scripts are not present in `package.json`, use `node test-db-connection.js` and `node test-database-queries.js`.)
 
-### Events
+## Environment
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/v1/events | Get all events (with filters) |
-| GET | /api/v1/events/upcoming | Get upcoming events |
-| GET | /api/v1/events/location/:location | Get events by location |
-| GET | /api/v1/events/:id | Get event by ID |
-| POST | /api/v1/events | Create new event |
-| PUT | /api/v1/events/:id | Update event |
-| DELETE | /api/v1/events/:id | Delete event |
-| POST | /api/v1/events/:id/attend | Add attendee |
-| DELETE | /api/v1/events/:id/attend | Remove attendee |
+Provide a `.env` with at least the following (example names):
 
-### Users
+- `MONGODB_URI` — MongoDB connection string
+- `PORT` — HTTP port (default 3000)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/v1/users | Get all users |
-| GET | /api/v1/users/:id | Get user by ID |
-| GET | /api/v1/users/email/:email | Get user by email |
-| GET | /api/v1/users/role/:role | Get users by role |
-| POST | /api/v1/users | Create user |
-| PUT | /api/v1/users/:id | Update user |
-| DELETE | /api/v1/users/:id | Delete user |
+Adjust names to match `src/config/database.js` if different.
 
-## Query Parameters
+## API Overview
 
-### Events Filtering
+Base path: `/api/v1`
 
-- `status`: Filter by event status
-- `location`: Filter by location (case-insensitive)
-- `search`: Search in title and description
-- `minCapacity`: Filter by minimum capacity
-- `page`: Pagination page number
-- `limit`: Items per page
+Events
+- GET `/events` — list events (supports filters: `status`, `location`, `search`, `minCapacity`, `page`, `limit`)
+- GET `/events/upcoming` — upcoming events
+- GET `/events/location/:location` — events by location
+- GET `/events/:id` — get event by ID
+- POST `/events` — create event
+- PUT `/events/:id` — update event
+- DELETE `/events/:id` — delete event
+- POST `/events/:id/attend` — add attendee to event
+- DELETE `/events/:id/attend` — remove attendee from event
 
-## Database Schema
+Users
+- GET `/users` — list users
+- GET `/users/:id` — get user by ID
+- GET `/users/email/:email` — get user by email
+- GET `/users/role/:role` — get users by role
+- POST `/users` — create user
+- PUT `/users/:id` — update user
+- DELETE `/users/:id` — delete user
 
-### Event Schema
+Note: Exact route paths are in `src/routes/`. Confirm route prefixes and adjust accordingly.
 
-```javascript
-{
-  title: String (required, min 3, max 100)
-  description: String (max 1000)
-  date: Date (required, future date)
-  location: String (required, min 2, max 100)
-  capacity: Number (required, min 1, max 10000)
-  attendees: Number (default: 0)
-  status: String (enum: upcoming, ongoing, completed, cancelled)
-  organizer: ObjectId (ref: User)
-  attendeeList: [ObjectId] (ref: User)
-}
-```
+## Data Models (summary)
 
-### User Schema
+Event (fields of interest): `title`, `description`, `date`, `location`, `capacity`, `attendees`, `status`, `organizer` (ref), `attendeeList` (refs)
 
-```javascript
-{
-  name: String (required, min 2, max 50)
-  email: String (required, unique)
-  role: String (enum: user, organizer, admin)
-  eventsAttended: [ObjectId] (ref: Event)
-  eventsOrganized: [ObjectId] (ref: Event)
-}
-```
+User (fields of interest): `name`, `email`, `role`, `eventsAttended` (refs), `eventsOrganized` (refs)
 
-## Project Structure
+See `src/models/EventSchema.js` and `src/models/UserSchema.js` for full definitions and validations.
 
-```
-lab-5-mongodb/
-├── src/
-│   ├── config/
-│   │   └── database.js
-│   ├── models/
-│   │   ├── EventSchema.js
-│   │   ├── UserSchema.js
-│   │   └── index.js
-│   ├── services/
-│   │   ├── eventService.js
-│   │   └── userService.js
-│   ├── controllers/
-│   │   ├── eventController.js
-│   │   └── userController.js
-│   ├── routes/
-│   │   ├── eventRoutes.js
-│   │   ├── userRoutes.js
-│   │   └── index.js
-│   └── utils/
-│       ├── apiResponse.js
-│       └── validationService.js
-├── server.js
-├── test-db-connection.js
-├── test-database-queries.js
-├── package.json
-└── .env
-```
+## Indexes & Performance
 
-## Database Indexes
+Common indexes (may already be created in schema files):
+- `date` — sorting
+- `location` — lookups
+- `status` — filtering
+- `organizer` — joins/lookup
+- text index on `title` and `description` for search
 
-The following indexes are created for performance:
+## Project Layout
 
-- `date: 1` - For sorting events by date
-- `location: 1` - For location-based queries
-- `status: 1` - For status filtering
-- `organizer: 1` - For organizer lookups
-- `createdAt: -1` - For sorting by creation date
-- `title: "text", description: "text"` - For full-text search
+- `server.js` — application entry and Express setup
+- `src/config/database.js` — DB connection and options
+- `src/models/` — Mongoose schemas and model exports
+- `src/services/` — business logic and DB access
+- `src/controllers/` — request handlers and response shaping
+- `src/routes/` — route definitions and mounting
+- `src/utils/` — helpers (apiResponse, validation, etc.)
+- `test-db-connection.js`, `test-database-queries.js` — small test scripts
 
-## Deliverables Checklist
+## Docker / Compose
 
-- [x] src/config/database.js - DB connection
-- [x] src/models/EventSchema.js - Event schema
-- [x] src/models/UserSchema.js - User schema
-- [x] src/models/index.js - Models export
-- [x] src/services/eventService.js - Event service
-- [x] src/services/userService.js - User service
-- [x] src/controllers/eventController.js - Updated
-- [x] server.js - With DB connection
-- [x] test-database-queries.js - Query tests
+This repo includes `Dockerfile` and `docker-compose.yml`. Use them to run the app and a local MongoDB instance together. Adjust the compose file or Dockerfile as needed for production deployments.
+
+## Contributing
+
+- Follow existing code style (ES Modules, concise functions)
+- Add tests for new query logic or schema changes
+- Keep controllers thin: prefer adding logic to services
+
+## Troubleshooting
+
+- "Cannot connect to MongoDB": verify `MONGODB_URI` and network access, check `src/config/database.js` options
+- Schema validation errors on create/update: validate payloads against rules in `src/models/*`
+
+
