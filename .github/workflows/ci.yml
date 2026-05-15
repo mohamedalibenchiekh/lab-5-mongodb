@@ -2,40 +2,40 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [master, develop]
   pull_request:
-    branches: [ main ]
+    branches: [master]
   workflow_dispatch: # Allow manual triggers
 
 env:
-  NODE_VERSION: '20'
-  MONGODB_VERSION: '7.0'
+  NODE_VERSION: "20"
+  MONGODB_VERSION: "7.0"
 
 jobs:
   # Job 1: Code Quality & Linting
   code-quality:
     name: 🔍 Code Quality
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
+          cache: "npm"
+
       - name: 📦 Install dependencies
         run: npm ci
-      
+
       - name: ✅ Run ESLint
         run: |
           npm install -g eslint
           eslint src/ --ext .js --format stylish
         continue-on-error: true
-      
+
       - name: 🎨 Check code formatting
         run: |
           npx prettier --check "src/**/*.js" || echo "Run npx prettier --write . to fix"
@@ -46,25 +46,25 @@ jobs:
     name: 🧪 Unit Tests
     runs-on: ubuntu-latest
     needs: code-quality
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
+          cache: "npm"
+
       - name: 📦 Install dependencies
         run: npm ci
-      
+
       - name: 🗄️ Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
           mongodb-version: ${{ env.MONGODB_VERSION }}
-      
+
       - name: ✅ Run tests
         run: |
           npm test || echo "No tests found yet"
@@ -77,25 +77,25 @@ jobs:
     name: 🔗 Integration Tests
     runs-on: ubuntu-latest
     needs: unit-tests
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
+          cache: "npm"
+
       - name: 📦 Install dependencies
         run: npm ci
-      
+
       - name: 🗄️ Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
           mongodb-version: ${{ env.MONGODB_VERSION }}
-      
+
       - name: 🚀 Start application
         run: |
           npm run dev &
@@ -104,13 +104,13 @@ jobs:
           PORT: 3001
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/event-manager-test
-      
+
       - name: ✅ Run database connection test
         run: npm run test:db
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/event-manager-test
-      
+
       - name: ✅ Run query tests
         run: npm run test:queries
         env:
@@ -122,23 +122,23 @@ jobs:
     name: 🔒 Security Scan
     runs-on: ubuntu-latest
     needs: code-quality
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
+          cache: "npm"
+
       - name: 📦 Install dependencies
         run: npm ci
-      
+
       - name: 🔍 Run npm audit
         run: npm audit --audit-level=moderate
-      
+
       - name: 🛡️ Run Snyk security scan
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -152,25 +152,25 @@ jobs:
     name: ⚡ Performance Check
     runs-on: ubuntu-latest
     needs: unit-tests
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
+          cache: "npm"
+
       - name: 📦 Install dependencies
         run: npm ci
-      
+
       - name: 🗄️ Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
           mongodb-version: ${{ env.MONGODB_VERSION }}
-      
+
       - name: 🚀 Run performance tests
         run: |
           npm run performance || echo "Performance tests not configured"
@@ -181,14 +181,14 @@ jobs:
     name: 🐳 Build Docker Image
     runs-on: ubuntu-latest
     needs: [integration-tests, security-scan]
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: 🏗️ Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -197,30 +197,30 @@ jobs:
           tags: lab-5-mongodb:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: 📊 Scan Docker image
         run: |
           docker scout quickview lab-5-mongodb:latest || echo "Docker Scout not available"
 
-  # Job 7: Deploy to Staging (on main branch)
+  # Job 7: Deploy to Staging (on master branch)
   deploy-staging:
     name: 🚀 Deploy to Staging
     runs-on: ubuntu-latest
     needs: [integration-tests, docker-build]
-    if: github.ref == 'refs/heads/main'
-    
+    if: github.ref == 'refs/heads/master'
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: 📦 Install dependencies
         run: npm ci
-      
+
       - name: 🌍 Deploy to staging environment
         run: |
           echo "Deploying to staging..."
@@ -237,16 +237,16 @@ jobs:
     name: 📦 Create Release
     runs-on: ubuntu-latest
     needs: [deploy-staging]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     permissions:
       contents: write
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 🔖 Create Release Tag
         id: tag
         run: |
@@ -254,7 +254,7 @@ jobs:
           git tag -a "v$VERSION" -m "Release version $VERSION"
           git push origin "v$VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
+
       - name: 📝 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -262,17 +262,17 @@ jobs:
           name: Release v${{ steps.tag.outputs.version }}
           body: |
             ## 🚀 New Release v${{ steps.tag.outputs.version }}
-            
+
             ### ✨ Features
             - MongoDB integration with Mongoose
             - Complete CRUD operations
             - Advanced queries and aggregation
             - Database indexes for performance
-            
+
             ### 🐛 Bug Fixes
             - Fixed connection issues
             - Improved error handling
-            
+
             ### 📦 Dependencies
             - Updated to latest versions
           draft: false

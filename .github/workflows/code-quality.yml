@@ -2,52 +2,52 @@ name: Code Quality
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [master, develop]
   pull_request:
-    branches: [ main ]
+    branches: [master]
 
 jobs:
   linting:
     name: 📝 Linting
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run ESLint
         run: npx eslint src/ --max-warnings 0
-      
+
       - name: Run Prettier check
         run: npx prettier --check "src/**/*.js"
-  
+
   testing:
     name: 🧪 Testing
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
-          mongodb-version: '7.0'
-      
+          mongodb-version: "7.0"
+
       - name: Run tests
         run: |
           npm run test:db
