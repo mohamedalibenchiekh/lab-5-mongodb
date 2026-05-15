@@ -61,27 +61,13 @@ const eventSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      immutable: true,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
-    timestamps: true,
+    timestamps: true, // This automatically handles createdAt and updatedAt
     collection: 'events',
   }
 );
 
-// Pre-save middleware
-eventSchema.pre('save', function (next) {
-  this.updatedAt = new Date();
-  next();
-});
 
 // Methods
 eventSchema.methods.addAttendee = async function (userId) {

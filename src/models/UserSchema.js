@@ -37,27 +37,14 @@ const userSchema = new mongoose.Schema(
         ref: 'Event',
       },
     ],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      immutable: true,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
-    timestamps: true,
+    timestamps: true, // This automatically handles createdAt and updatedAt
     collection: 'users',
   }
 );
 
-// Pre-save middleware
-userSchema.pre('save', function (next) {
-  this.updatedAt = new Date();
-  next();
-});
+// Mongoose timestamps already update `updatedAt` automatically.
 
 // Methods
 userSchema.methods.attendEvent = async function (eventId) {
@@ -82,7 +69,6 @@ userSchema.statics.findByRole = function (role) {
 };
 
 // Indexes
-userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
 export default userSchema;

@@ -15,10 +15,8 @@ export class Database {
     try {
       console.log('🔌 Connecting to MongoDB...');
 
-      await mongoose.connect(MONGODB_ATLAS, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
+      // Remove deprecated options for Mongoose v8+
+      await mongoose.connect(MONGODB_ATLAS);
 
       console.log('✅ MongoDB connected successfully!');
       console.log(`📚 Database: ${mongoose.connection.name}`);
