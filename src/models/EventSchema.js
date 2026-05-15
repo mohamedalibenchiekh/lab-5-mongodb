@@ -68,7 +68,6 @@ const eventSchema = new mongoose.Schema(
   }
 );
 
-
 // Methods
 eventSchema.methods.addAttendee = async function (userId) {
   if (this.attendees < this.capacity) {

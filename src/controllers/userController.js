@@ -11,9 +11,9 @@ export class UserController {
       const { page = 1, limit = 10 } = req.query;
       const result = await UserService.getAllUsers(page, limit);
 
-      res.status(200).json(
-        ApiResponse.paginated(result.users, result.page, result.limit, result.total)
-      );
+      res
+        .status(200)
+        .json(ApiResponse.paginated(result.users, result.page, result.limit, result.total));
     } catch (error) {
       res.status(500).json(ApiResponse.error(error.message, 500));
     }

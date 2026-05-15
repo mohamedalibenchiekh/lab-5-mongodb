@@ -153,9 +153,7 @@ export class EventService {
   // Get upcoming events
   static async getUpcomingEvents(limit = 5) {
     try {
-      return await Event.findUpcoming()
-        .populate('organizer', 'name email')
-        .limit(limit);
+      return await Event.findUpcoming().populate('organizer', 'name email').limit(limit);
     } catch (error) {
       throw new Error(`Failed to fetch upcoming events: ${error.message}`);
     }
@@ -164,10 +162,7 @@ export class EventService {
   // Get events by location
   static async getEventsByLocation(location) {
     try {
-      return await Event.findByLocation(location).populate(
-        'organizer',
-        'name email'
-      );
+      return await Event.findByLocation(location).populate('organizer', 'name email');
     } catch (error) {
       throw new Error(`Failed to fetch events by location: ${error.message}`);
     }

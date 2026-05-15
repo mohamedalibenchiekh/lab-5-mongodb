@@ -8,14 +8,7 @@ export class EventController {
   // Get all events
   static async getAllEvents(req, res) {
     try {
-      const {
-        status,
-        location,
-        search,
-        minCapacity,
-        page = 1,
-        limit = 10,
-      } = req.query;
+      const { status, location, search, minCapacity, page = 1, limit = 10 } = req.query;
 
       const filters = {};
       if (status) filters.status = status;
@@ -25,9 +18,9 @@ export class EventController {
 
       const result = await EventService.getAllEvents(filters, page, limit);
 
-      res.status(200).json(
-        ApiResponse.paginated(result.events, result.page, result.limit, result.total)
-      );
+      res
+        .status(200)
+        .json(ApiResponse.paginated(result.events, result.page, result.limit, result.total));
     } catch (error) {
       res.status(500).json(ApiResponse.error(error.message, 500));
     }
